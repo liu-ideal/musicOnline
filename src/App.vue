@@ -1,17 +1,17 @@
 <template>
   <div id="app">
-    <mt-header fixed class="headder">
+    <mt-header class="headder">
     <mt-button slot="left" class="left iconfont icon-tubiaozhizuomobanyihuifu-">music online</mt-button>
   <mt-button slot="right" class="right"><i class="iconfont icon-liebiao" @touchend='showAboutPage'></i></mt-button>
 <about/>
 </mt-header>
 <div class="router_link">
-  <router-link to='recommend'>推荐歌单</router-link>
-  <router-link to='hot'>热歌榜</router-link>
- <router-link to='searcher'>搜索</router-link>
+  <router-link to='/recommend'>推荐歌单</router-link>
+  <router-link to='/hot'>热歌榜</router-link>
+ <router-link to='/searcher'>搜索</router-link>
 </div>
+    <about  ref='childRef' @childResize='childResize'/>
     <router-view/>
-    <about v-show='aboutshow' @childNeedHid='childNeedHid'/>
   </div>
 </template>
 
@@ -24,7 +24,8 @@ about
 },
 data(){
   return{
-    aboutshow:false
+    childRef:null,
+    needMove:null
   }
 
 },
@@ -33,17 +34,38 @@ methods:{
     this.aboutshow=value
   },
   showAboutPage(){
-    console.log('liupei');
-  this.aboutshow=true;
-  setTimeout(()=>{this.$store.commit('changeTransform','0')},1)
-
-  }
+  this.getChildRef().style.left=0
+},
+  hidCover(){
+    this.$refs.childRef.childRef.style.left=this.needMove+'px';
+  },
+  getChildRef(){
+  //this.$refs.needMove
+  return this.$refs.childRef.childRef;
+},
+childResize(value){
+if(parseInt(this.getChildRef().style.left)===0){
+  return
 }
-
+  this.needMove=value;
+  this.hidCover()
+}
+},
+mounted(){
+  this.needMove=document.documentElement.clientWidth;
+  this.hidCover();
+  //this.getChildRef().style.left=this.needMove;
+},
 }
 </script>
 
 <style >
+#app{
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
 .headder{
 height: 80px;
 }
@@ -52,7 +74,7 @@ height: 80px;
   color:rgb(215, 52, 52)
 }
 .router_link{
-  margin-top: 80px;
+
   padding: 15px 0;
   font-size: 14px;
   display: flex;

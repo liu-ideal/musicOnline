@@ -7,17 +7,17 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: 'recommend',
+      path: '/recommend',
       name: 'recommend',
       component: recommend
     },
     {
-      path:'hot',
+      path:'/hot',
       name:'hot',
       component:hot
     },
     {
-      path:'search',
+      path:'/search',
       name:'search',
       component:search
     },

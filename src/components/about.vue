@@ -1,8 +1,9 @@
 <template lang="html">
-  <div class="wrap">
-    <div class="wrap_cover" @touchend='hidCover' :style="{transform:this.$store.state.needchange}" ref='aCover'>
+
+  <div class="wrap" ref='mydiv'>
+    <div class="wrap_cover" @touchend='hidCover'>
     </div>
-    <ul class="about" :style="{transform:this.$store.state.needchange}">
+    <ul class="about">
       <li v-for='(item,index) in list' :class="{active:item.class}" @touchstart='isTouching(index)' @touchend='noTouching(index)'>{{item.content}}</li>
     </ul>
   </div>
@@ -14,8 +15,8 @@ export default {
   data(){
     return{
       list:[{class:false,content:'下载APP'},{class:false,content:'关于作者'},{class:false,content:'关于版本'},{class:false,content:'联系我们'}],
-      needMove:0,
-      viewWidth:null
+      viewWidth:null,
+      childRef:null
     }
   },
   methods:{
@@ -26,38 +27,42 @@ export default {
       this.list[index].class=false
     },
     hidCover(){
-
-      var pro=new Promise((resolve,reject)=>{
-        this.$store.commit('changeTransform',this.viewWidth);
-        setTimeout(()=>{
-      resolve()
-        },600)
-      }).then((value)=>{
-        this.$emit('childNeedHid',false)
-      })
+    this.$refs.mydiv.style.left=this.viewWidth+'px';
+  },
+    windowResize(){
+      this.viewWidth=document.documentElement.clientWidth;
+      this.$emit('childResize',this.viewWidth)
     }
   },
-  mounted(){
+  mounted(){//操作DOM实现过渡效果了,其他方法好像不好做，因为要动态获取设备的宽度
+    window.onresize=this.windowResize;
     this.viewWidth=document.documentElement.clientWidth;
+    this.childRef=this.$refs.mydiv;
   },
   computed:{
 
   },
-
+  props:['aboutshow']
 }
 </script>
 
 <style lang="css" scoped>
-.wrap_cover{
-  position: fixed;
+.wrap{
+  position: absolute;
   top: 0;
-  left: 0;
-  width: 100vh;
+  width: 100vw;
   height: 100vh;
+  transition: left .3s;
+}
+.wrap_cover{
+  position: absolute;
+  top: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
   background-color:black;
   opacity: 0.8;
   z-index: 99;
-  transition: all .5s;
 }
 
 .about{
