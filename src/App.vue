@@ -6,7 +6,7 @@
 <about/>
 </mt-header>
 <div class="router_link">
-  <router-link to='/recommend'>推荐歌单</router-link>
+  <router-link to='/recommend'>推荐音乐</router-link>
   <router-link to='/hot'>热歌榜</router-link>
  <router-link to='/searcher'>搜索</router-link>
 </div>
@@ -25,7 +25,8 @@ about
 data(){
   return{
     childRef:null,
-    needMove:null
+    needMove:null,
+
   }
 
 },
@@ -49,13 +50,17 @@ if(parseInt(this.getChildRef().style.left)===0){
 }
   this.needMove=value;
   this.hidCover()
-}
+},
+
 },
 mounted(){
   this.needMove=document.documentElement.clientWidth;
+  //setTimeout(()=>{console.log(document.documentElement.offsetHeight);},2000);
   this.hidCover();
+
   //this.getChildRef().style.left=this.needMove;
 },
+
 }
 </script>
 
@@ -82,5 +87,9 @@ height: 80px;
   justify-content: space-around;
   border-bottom: 1px solid rgb(163, 163, 162)
 }
-
+.router-link-active{
+  color: rgb(154, 41, 5);
+  padding-bottom: 10px;
+  border-bottom: 3px solid rgb(154, 41, 5)
+}
 </style>

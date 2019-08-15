@@ -8,7 +8,9 @@ import 'mint-ui/lib/style.css'
 import Vuex from 'vuex'
 import store from '@/store/store.js'
 import Axios from 'axios'
+import Rem from './rem.js'
 Vue.prototype.$axios=Axios
+Rem()
 Vue.use(Mint)
 Vue.use(Vuex)
 Vue.config.productionTip = false

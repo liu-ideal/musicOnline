@@ -35,7 +35,7 @@ export default {
     }
   },
   mounted(){//操作DOM实现过渡效果了,其他方法好像不好做，因为要动态获取设备的宽度
-    window.onresize=this.windowResize;
+    window.addEventListener('resize',this.windowResize,false)
     this.viewWidth=document.documentElement.clientWidth;
     this.childRef=this.$refs.mydiv;
   },
