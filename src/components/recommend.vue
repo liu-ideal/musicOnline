@@ -2,7 +2,7 @@
   <div class="wrap">
     <h2>推荐歌单</h2>
     <ul class="songlist">
-      <li v-for='item in recommendSongList'> <img :src="item.img"> <p> {{item.title}} </p> </li>
+      <li v-for='(item,index) in recommendSongList' @touchend='godetail(index)'> <img :src="item.img"> <p> {{item.title}} </p> </li>
     </ul>
     <h2>推荐单曲</h2>
     <ul class="song">
@@ -50,6 +50,9 @@ export default {
 
       ],
       count:0,
+      saveSongList:[     //因为要减少HTTP请求以便不会被网易云服务器拒绝访问，所以一开始就要把数据保存下来 而不是每次点击就发送请求 这里保存的是推荐歌单的详情
+
+      ]
     }
   },
   methods: {
@@ -61,18 +64,26 @@ export default {
           //count+=10;
           for (var i = this.count; i < this.count+6; i++) {
             if(this.totalRecommendSongList[i].title.length>25){
-              var ti=this.totalRecommendSongList[i].title.slice(0,25)+'...' ;
-              this.totalRecommendSongList.splice(i,1,ti)
+              var ti=this.totalRecommendSongList[i].title.slice(0,20)+'...' ;
+              //console.log(ti);
+              this.totalRecommendSongList[i].title=ti
             }
             this.recommendSong.push(this.totalRecommendSongList[i])
           }
           this.count+=6;
-          console.log(this.recommendSong);
+          //console.log(this.recommendSong);
 
      }
       //if(total-canSee)
       // console.log(total-canSee);
       // console.log(document.documentElement.scrollTop);
+    },
+    godetail(index){
+      //console.log(index);
+      this.$router.push({name:'detail',params:{ //路由传参
+        id:index+1, //传个ID用以标识路径 那边用:id做接收就可以了
+        dataa:this.saveSongList[index]
+      }})
     }
 
   },
@@ -80,11 +91,18 @@ export default {
     this.$axios.get('https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=songlist&id=2793222783').then(res => {
       this.count+=10;
       this.totalRecommendSongList=res.data.Body;
-      for (var i = 0; i < this.count; i++) {
+      for (let i = 0; i < this.count; i++) {
         this.recommendSong.push(res.data.Body[i])
       }
-      console.log(this.recommendSong);
-    })
+      //console.log(this.recommendSong);
+    });
+    //下面把推荐歌单详情 请求到保存下来
+    for(let j =0;j<4;j++){//注意要用LET声明 否则FOR循环在异步操作下得不到自己想要的结果
+      this.$axios.get(`https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=songlist&id=${this.recommendSongList[j].id}`).then(res => {
+          this.saveSongList[j]=res.data.Body;
+        //console.log(res);
+      });
+    }
   },
   mounted(){
     window.addEventListener('scroll',()=>{this.lazyLoad()},false)

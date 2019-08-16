@@ -1,6 +1,6 @@
 <template lang="html">
   <div class="">
-    这是热歌页面
+    尚未更新 敬请期待
   </div>
 </template>
 
@@ -10,4 +10,7 @@ export default {
 </script>
 
 <style lang="css" scoped>
+div{
+  text-align: center;
+}
 </style>
