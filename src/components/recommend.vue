@@ -16,15 +16,22 @@
       </div>
     </li>
     </ul>
+      <p class="isloading" v-show='canSee'>{{isloading}}</p>
   </div>
 </template>
 
 <script>
+import { Indicator } from 'mint-ui';
 export default {
   name: 'recommend',
   data() {
     return {
-      totalRecommendSongList:[],
+      isloading:'数据加载中,请稍等...',
+      every:6,
+      count:0,
+      nomore:false,
+      canSee:false,
+      totalRecommendSongList: [],
       recommendSongList: [{
           id: 2341985523,
           img: 'http://p2.music.126.net/I2X59vERhvifkYJGMFkreA==/109951164290090765.jpg?imageView&thumbnail=246x0&quality=75&tostatic=0',
@@ -49,63 +56,91 @@ export default {
       recommendSong: [
 
       ],
-      count:0,
-      saveSongList:[     //因为要减少HTTP请求以便不会被网易云服务器拒绝访问，所以一开始就要把数据保存下来 而不是每次点击就发送请求 这里保存的是推荐歌单的详情
+      count: 0,
+      saveSongList: [ //因为要减少HTTP请求以便不会被网易云服务器拒绝访问，所以一开始就要把数据保存下来 而不是每次点击就发送请求 这里保存的是推荐歌单的详情
 
       ]
     }
   },
   methods: {
-    lazyLoad(){
-      var total=document.documentElement.scrollHeight;//scrollHeight表示元素总高度.不管可见不可见，也不管有没有设置OVERFLOW为HIDDEN 它是由元素中有多少内容决定的
-      var canSee=document.documentElement.clientHeight;//offsetHeight与clientHeight的区别-->从网上得到资料与自己实践得来的结果有很大不同 在这里只有用clientHeight才能得到想要的结果 而offsetHeight得到的与scrollHeight一样
-     if(total-canSee===document.documentElement.scrollTop){//这个表示滚动条触底
-        //console.log('ok');
+    lazyLoad() {
+      if(!this.nomore){
+        var total = document.documentElement.scrollHeight; //scrollHeight表示元素总高度.不管可见不可见，也不管有没有设置OVERFLOW为HIDDEN 它是由元素中有多少内容决定的
+        var canSee = document.documentElement.clientHeight; //offsetHeight与clientHeight的区别-->从网上得到资料与自己实践得来的结果有很大不同 在这里只有用clientHeight才能得到想要的结果 而offsetHeight得到的与scrollHeight一样
+        if (total - canSee === document.documentElement.scrollTop) { //这个表示滚动条触底
           //count+=10;
-          for (var i = this.count; i < this.count+6; i++) {
-            if(this.totalRecommendSongList[i].title.length>25){
-              var ti=this.totalRecommendSongList[i].title.slice(0,20)+'...' ;
-              //console.log(ti);
-              this.totalRecommendSongList[i].title=ti
+          if(this.count+6>this.totalRecommendSongList.length){
+            this.every=this.totalRecommendSongList.length-this.count;
+            if(this.every===0){
+              this.every++
             }
-            this.recommendSong.push(this.totalRecommendSongList[i])
           }
-          this.count+=6;
+          this.canSee=true;
+          setTimeout(()=>{
+            for (var i = this.count; i < this.count + this.every; i++) {
+              if(!this.totalRecommendSongList[i]){
+                this.nomore=true;
+                this.canSee=true;
+                this.isloading='没有更多了'
+                Indicator.close();
+                return
+              }
+              if (this.totalRecommendSongList[i].title.length > 25) {
+
+                var ti = this.totalRecommendSongList[i].title.slice(0, 20) + '...';
+                //console.log(ti);
+                this.totalRecommendSongList[i].title = ti
+              }
+              this.recommendSong.push(this.totalRecommendSongList[i])
+            }
+            Indicator.close();
+            this.canSee=false;
+            this.count += this.every;
+          },1000)
+          Indicator.open()
           //console.log(this.recommendSong);
 
-     }
-      //if(total-canSee)
-      // console.log(total-canSee);
-      // console.log(document.documentElement.scrollTop);
+        }
+        //if(total-canSee)
+        // console.log(total-canSee);
+        // console.log(document.documentElement.scrollTop);
+      }
+
     },
-    godetail(index){
+    godetail(index) {
       //console.log(index);
-      this.$router.push({name:'detail',params:{ //路由传参
-        id:index+1, //传个ID用以标识路径 那边用:id做接收就可以了
-        dataa:this.saveSongList[index]
-      }})
+      this.$router.push({
+        name: 'detail',
+        params: { //路由传参
+          id: index + 1, //传个ID用以标识路径 那边用:id做接收就可以了
+          dataa: this.saveSongList[index]
+        }
+      })
     }
 
   },
   created() {
     this.$axios.get('https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=songlist&id=2793222783').then(res => {
-      this.count+=10;
-      this.totalRecommendSongList=res.data.Body;
+      this.count += 10;
+      this.totalRecommendSongList = res.data.Body;
       for (let i = 0; i < this.count; i++) {
         this.recommendSong.push(res.data.Body[i])
       }
       //console.log(this.recommendSong);
     });
     //下面把推荐歌单详情 请求到保存下来
-    for(let j =0;j<4;j++){//注意要用LET声明 否则FOR循环在异步操作下得不到自己想要的结果
+    for (let j = 0; j < 4; j++) { //注意要用LET声明 否则FOR循环在异步操作下得不到自己想要的结果
       this.$axios.get(`https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=songlist&id=${this.recommendSongList[j].id}`).then(res => {
-          this.saveSongList[j]=res.data.Body;
+        this.saveSongList[j] = res.data.Body;
         //console.log(res);
       });
     }
   },
-  mounted(){
-    window.addEventListener('scroll',()=>{this.lazyLoad()},false)
+  mounted() {
+    window.addEventListener('scroll',this.lazyLoad,false)
+  },
+  beforeDestroy(){//组件销毁前就把这个事件移除 不然会因为JS闭包特性使得两个组件内的函数都执行（个人猜测）
+    window.removeEventListener('scroll',this.lazyLoad)
   }
 }
 </script>
@@ -174,6 +209,12 @@ font-size: 0.04rem
   margin-top:0.035rem;
   border-bottom: 1px solid rgb(186, 180, 186);
   cursor: pointer;
+}
+.isloading{
+  text-align: center;
+  color: rgb(172, 167, 172);
+  font-size: 16px;
+  padding: 8px 0;
 }
 </style>
 <!-- http://www.mlwei.com/1446.html   2793222783-->

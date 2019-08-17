@@ -6,7 +6,9 @@
   <link rel="stylesheet" href="http://at.alicdn.com/t/font_1347668_grt0tm0bkf.css">
     <style media="screen">
     html{
-      width: 1rem;
+      /* width: 1rem; 这里不能在HTML元素内设置REM单位 否则在除火狐浏览器外会出现异常*/
+      width: 100%;
+      font-size: 400px;
     }
     *{
       margin: 0;

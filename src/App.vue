@@ -8,7 +8,7 @@
 <div class="router_link">
   <router-link to='/recommend'>推荐音乐</router-link>
   <router-link to='/hot'>热歌榜</router-link>
- <router-link to='/searcher'>搜索</router-link>
+ <router-link to='/search'>搜索</router-link>
 </div>
     <about  ref='childRef' @childResize='childResize'/>
     <router-view/>
