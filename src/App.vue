@@ -12,6 +12,20 @@
 </div>
     <about  ref='childRef' @childResize='childResize'/>
     <router-view/>
+    <div class="miniPlayer" v-show='showMini'><!-- 底部的迷你播放器 -->
+      <div class="mini_left">
+        <div class="mini_left_img">
+    <img :src='pic'>
+        </div>
+        <div class="mini_left_content">
+         <p>{{title}}</p>
+         <p>{{author}}</p>
+        </div>
+      </div>
+      <div class="mini_right iconfont icon-arrow- icon-bofang1">
+
+      </div>
+    </div>
   </div>
 </template>
 
@@ -26,6 +40,10 @@ data(){
   return{
     childRef:null,
     needMove:null,
+    showMini:true,
+    pic:'',
+    author:'',
+    title:''
 
   }
 
@@ -60,7 +78,15 @@ mounted(){
 
   //this.getChildRef().style.left=this.needMove;
 },
-
+created(){
+  var name=encodeURI('江南')
+  this.$axios.get(`https://api.mlwei.com/music/api/wy/?key=523077333&id=${name}&type=so&cache=0&nu=10`).then(res=>{
+    this.pic=res.data.Body[0].pic;
+    this.author=res.data.Body[0].author;
+    this.title=res.data.Body[0].title;
+    console.log(res.data);
+  })
+}
 }
 </script>
 
@@ -91,5 +117,60 @@ height: 80px;
   color: rgb(154, 41, 5);
   padding-bottom: 10px;
   border-bottom: 3px solid rgb(154, 41, 5)
+}
+.miniPlayer{
+  height: 0.19rem;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  background-color: rgba(26, 26, 27,0.9);
+  color:white;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-between;
+
+}
+.mini_left{
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 50%;
+}
+.mini_left .mini_left_img{
+  display: flex;
+  align-items: center;
+  margin-left: -0.04rem;
+}
+.mini_left .mini_left_content{
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  justify-content: space-around;
+}
+.mini_left .mini_left_content p:nth-child(1){
+  font-size: 0.048rem;
+}
+.mini_left .mini_left_content p:nth-child(2){
+  color: rgb(233, 233, 233);
+  font-size: 0.04rem;
+}
+.mini_right{
+  width: 50%;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-around;
+  font-size: 0.07rem;
+  align-items: center;
+}
+.mini_left_img img{
+  display: block;
+  width: 0.16rem;
+  height: 0.16rem;
+  border: 1px solid rgb(231, 241, 242);
+  box-sizing: border-box;
 }
 </style>
