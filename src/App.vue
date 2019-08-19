@@ -5,6 +5,8 @@
   <mt-button slot="right" class="right"><i class="iconfont icon-liebiao" @touchend='showAboutPage'></i></mt-button>
 <about/>
 </mt-header>
+<audio src="https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=url&id=108914" ref='myAudio'>
+</audio>
 <div class="router_link">
   <router-link to='/recommend'>推荐音乐</router-link>
   <router-link to='/hot'>热歌榜</router-link>
@@ -12,7 +14,7 @@
 </div>
     <about  ref='childRef' @childResize='childResize'/>
     <router-view/>
-    <div class="miniPlayer" v-show='showMini'><!-- 底部的迷你播放器 -->
+    <div class="miniPlayer" v-show='showMini' @touchend='showChildPlay'><!-- 底部的迷你播放器 -->
       <div class="mini_left">
         <div class="mini_left_img">
     <img :src='pic'>
@@ -22,19 +24,21 @@
          <p>{{author}}</p>
         </div>
       </div>
-      <div class="mini_right iconfont icon-arrow- icon-bofang1">
-
+      <div class="mini_right">
+         <i class="iconfont" :class="[isActive?arrowActive:bofangActive]" @touchend.stop='changePlayStatu'></i>
       </div>
     </div>
+ <player :toChildPlayer='toChildPlayer' @meNeedHid='meNeedHid'/>
   </div>
 </template>
 
 <script>
 import about from '@/components/about'
+import player from '@/components/player'
 export default {
   name: 'App',
   components:{
-about
+about,player
 },
 data(){
   return{
@@ -43,7 +47,11 @@ data(){
     showMini:true,
     pic:'',
     author:'',
-    title:''
+    title:'',
+    isActive:true,
+    arrowActive:'icon-arrow-',
+    bofangActive:'icon-bofang1',
+    toChildPlayer:true
 
   }
 
@@ -69,13 +77,26 @@ if(parseInt(this.getChildRef().style.left)===0){
   this.needMove=value;
   this.hidCover()
 },
+changePlayStatu(){
+  this.isActive=!this.isActive;
+  this.$refs.myAudio.play();
+},
+meNeedHid(){
 
+  this.toChildPlayer=!this.toChildPlayer;
+
+},
+showChildPlay(){
+  this.toChildPlayer=true
+}
 },
 mounted(){
   this.needMove=document.documentElement.clientWidth;
   //setTimeout(()=>{console.log(document.documentElement.offsetHeight);},2000);
   this.hidCover();
-
+   this.$axios.get('https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=song&id=108914').then(res=>{
+     console.log(res.data);
+   })
   //this.getChildRef().style.left=this.needMove;
 },
 created(){
@@ -163,8 +184,11 @@ height: 80px;
   flex-wrap: nowrap;
   flex-direction: row;
   justify-content: space-around;
-  font-size: 0.07rem;
+  font-size: 0.09rem;
   align-items: center;
+}
+.mini_right i{
+  font-size: inherit
 }
 .mini_left_img img{
   display: block;
