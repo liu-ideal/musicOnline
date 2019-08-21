@@ -7,6 +7,7 @@ import recom_detail from '@/components/recom_detail'
 Vue.use(Router)
 export default new Router({
   routes: [
+    {path: '/', redirect: 'recommend'},
     {
       path: '/recommend',
       name: 'recommend',

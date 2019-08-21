@@ -1,32 +1,32 @@
 <template lang="html">
   <transition name='fade'>
-  <div class="wrap" v-show='this.toChildPlayer'>
+  <div class="wrap" v-show='this.toChildPlayer' @touchmove.prevent='' @scroll.stop=''>
     <div class="clickTohid">
       <i class="iconfont icon-Group" @touchend='hidPlayer'></i>
     </div>
     <div class="songInfor">
-  <p class="title">{{title}}</p>
-  <p class="author">{{author}}</p>
+  <p class="title">{{this.$store.state.title}}</p>
+  <p class="author">{{this.$store.state.author}}</p>
   <div class="imger">
-      <img :src="imgSrc"/>
+      <img :src="this.$store.state.pic"/>
   </div>
   <p class="lrc">暂不支持歌词功能</p>
     </div>
     <div class="progress">
     <div class="timeStart">
-      {{timeStart}}
+      {{this.$store.state.currentTime|myshouldTime}}
     </div>
-    <div class="main_progress">
-      <div class="real_progress">
-        <span></span>
+    <div class="main_progress" @touchmove='toMove' @touchend='changeProgress'>
+      <div class="real_progress" :style="{width:this.$store.state.realWidth+'px'}">
+        <span ref='theSpan' :style="{left:this.$store.state.spanPosition+'px'}"></span>
       </div>
     </div>
     <div class="timeTotal">
-      {{timeTotal}}
+      {{this.$store.state.playControl.duration|capitalize}}
     </div>
     </div>
     <div class="play" @touchend='changePlayStatu'>
-      <i class="iconfont" :class="[isActive?arrowActive:bofangActive]"></i>
+      <i class="iconfont" :class="[this.$store.state.PlayStatu?arrowActive:bofangActive]"></i>
     </div>
   </div>
   </transition>
@@ -37,25 +37,115 @@ export default {
   name:'player',
   data(){
     return{
-      title:'你之所以是你',
-      author:'方晓轩',
-      imgSrc:"https://api.mlwei.com/music/api/wy/?key=523077333&cache=0&type=pic&id=96533",
       isActive:true,
       arrowActive:'icon-arrow-',
       bofangActive:'icon-bofang1',
       timeStart:'00:00',
-      timeTotal:'03:00'
+      shouldTime:0,
+      timmer:null,
+      spanPosition:0,
+      realWidth:0
     }
   },
+
   methods:{
     changePlayStatu(){
-      this.isActive=!this.isActive
+      if(this.$store.state.PlayStatu){
+        //console.log(this.myRef);
+      this.timmer = setInterval(()=>{
+         if(this.$store.state.playControl.ended||this.$store.state.playControl.paused){//如果当前播放已经结束 即清除这个时间队列
+           //console.log(this.timmer);
+           clearInterval(this.timmer);
+           return
+       }
+          var value= parseInt(this.$store.state.playControl.currentTime);
+          this.$store.commit('changeCurrentTime',value);
+        var jindu=Math.floor((this.$store.state.playControl.currentTime/this.$store.state.playControl.duration)*100)/100; //这是时间上的进度百分比
+          //console.log('player');
+        var widthh=document.querySelector('.main_progress').offsetWidth;
+        this.$store.commit('changeSpanPosition',widthh*jindu);
+        this.$store.commit('changeRealWidth',widthh*jindu);
+        },1000)
+        this.myRef.play();
+        this.$store.commit('changePlayStatu',!this.$store.state.PlayStatu)
+      }else{
+        this.myRef.pause();
+        this.$store.commit('changePlayStatu',!this.$store.state.PlayStatu)
+      }
     },
     hidPlayer(){
       this.$emit('meNeedHid')
-    }
+    },
+    toMove(e){
+      var leftt=document.querySelector('.main_progress').offsetLeft;
+      var widthh=document.querySelector('.main_progress').offsetWidth;
+      var goMove=e.changedTouches[0].clientX-5-leftt;//重置触点
+      if(goMove<0||goMove>widthh){return}
+      this.$refs.theSpan.style.left=goMove+'px';
+      document.querySelector('.real_progress').style.width=goMove+'px';
+      var jindu=Math.floor((goMove/widthh)*100)/100;//这是进度百分比
+      var allTime=this.$store.state.playControl.duration;
+      var shouldTime=parseInt(allTime*jindu);
+      this.shouldTime=shouldTime;
+      //console.log(shouldTime);
+      //console.log(jindu);
+    },
+    changeProgress(){
+      this.$store.state.playControl.currentTime=this.shouldTime
+    },
+
   },
-  props:['toChildPlayer']
+  computed:{
+
+  },
+  props:['toChildPlayer','myRef'],
+  mounted(){
+  },
+  filters: {
+  capitalize: function (value) {
+    if (!value) return '00:00';
+    value = parseInt(value);
+    var yushu=value%60;
+    var zhengshu= parseInt(value/60);
+      return `0${zhengshu}:${yushu}`
+  },
+  myshouldTime:function(value){//过滤器 对VUEX中的当前播放秒数监听
+    var fengzhong=0;
+    var miao=0;
+    if (!value) return '00:00';
+     if(value<60){
+       miao=value<10?`0${value}`: value;
+       //console.log('one');
+       fengzhong=0
+     }
+     if(value>=60&&value<120){
+       fengzhong=1;
+       //console.log('tWO');
+      miao = value%60<10?`0${value-60}`:value-60
+     }
+     if(value>=120&&value<180){
+       fengzhong=2;
+       miao = value%60<10?`0${value-120}`:value-120
+     }
+     if(value>=180&&value<240){
+       fengzhong=3;
+       miao = value%60<10?`0${value-180}`:value-180
+     }
+     if(value>=240&&value<300){
+       fengzhong=4;
+       miao = value%60<10?`0${value-240}`:value-240
+     }
+     if(value>=300&&value<360){
+       fengzhong=5;
+       miao = value%60<10?`0${value-300}`:value-300
+     }
+     if(value>=360){
+       fengzhong=6;
+       miao = `00`
+     }
+    return `0${fengzhong}:${miao}`
+  }
+}
 }
 </script>
 
@@ -69,6 +159,7 @@ export default {
   background-color: rgba(42, 71, 77, 1);
   color: white;
   text-align: center;
+  z-index: 99;
 }
 .wrap .clickTohid{
   text-align: center;
@@ -143,7 +234,7 @@ font-size: 0.04rem;
   position: absolute;
   top: 0;
   left: 0;
-  width: 50%;
+  width: 0;
   height: 100%;
   background-color: #259ef7;
 }

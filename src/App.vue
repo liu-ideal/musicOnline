@@ -5,7 +5,7 @@
   <mt-button slot="right" class="right"><i class="iconfont icon-liebiao" @touchend='showAboutPage'></i></mt-button>
 <about/>
 </mt-header>
-<audio src="https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=url&id=108914" ref='myAudio'>
+<audio :src="this.$store.state.song" ref='myAudio'>
 </audio>
 <div class="router_link">
   <router-link to='/recommend'>推荐音乐</router-link>
@@ -17,18 +17,18 @@
     <div class="miniPlayer" v-show='showMini' @touchend='showChildPlay'><!-- 底部的迷你播放器 -->
       <div class="mini_left">
         <div class="mini_left_img">
-    <img :src='pic'>
+    <img :src='this.$store.state.pic'>
         </div>
         <div class="mini_left_content">
-         <p>{{title}}</p>
-         <p>{{author}}</p>
+         <p>{{this.$store.state.title}}</p>
+         <p>{{this.$store.state.author}}</p>
         </div>
       </div>
       <div class="mini_right">
-         <i class="iconfont" :class="[isActive?arrowActive:bofangActive]" @touchend.stop='changePlayStatu'></i>
+         <i class="iconfont" :class="[this.$store.state.PlayStatu?arrowActive:bofangActive]" @touchend.stop='changePlayStatu'></i>
       </div>
     </div>
- <player :toChildPlayer='toChildPlayer' @meNeedHid='meNeedHid'/>
+ <player :toChildPlayer='toChildPlayer' @meNeedHid='meNeedHid' :myRef='myRef'/>
   </div>
 </template>
 
@@ -45,13 +45,13 @@ data(){
     childRef:null,
     needMove:null,
     showMini:true,
-    pic:'',
-    author:'',
-    title:'',
     isActive:true,
     arrowActive:'icon-arrow-',
     bofangActive:'icon-bofang1',
-    toChildPlayer:true
+    toChildPlayer:false,
+    songUrl:'',
+    myRef:null,
+    timmer:null
 
   }
 
@@ -78,8 +78,29 @@ if(parseInt(this.getChildRef().style.left)===0){
   this.hidCover()
 },
 changePlayStatu(){
-  this.isActive=!this.isActive;
-  this.$refs.myAudio.play();
+  if(this.$store.state.PlayStatu){
+  /*--------------*/
+    this.timmer = setInterval(()=>{
+       if(this.$store.state.playControl.ended||this.$store.state.playControl.paused){//如果当前播放已经结束 即清除这个时间队列
+         //console.log(this.timmer);
+         clearInterval(this.timmer);
+         return
+     }
+        var value= parseInt(this.$store.state.playControl.currentTime);
+        this.$store.commit('changeCurrentTime',value);
+      var jindu=Math.floor((this.$store.state.playControl.currentTime/this.$store.state.playControl.duration)*100)/100; //这是时间上的进度百分比
+        //console.log('app');
+      var widthh=document.querySelector('.main_progress').offsetWidth;
+      this.$store.commit('changeSpanPosition',widthh*jindu);
+      this.$store.commit('changeRealWidth',widthh*jindu);
+      },1000)
+    /*--------------*/
+    this.$refs.myAudio.play();
+    this.$store.commit('changePlayStatu',!this.$store.state.PlayStatu)
+  }else{
+    this.$refs.myAudio.pause();
+    this.$store.commit('changePlayStatu',!this.$store.state.PlayStatu)
+  }
 },
 meNeedHid(){
 
@@ -91,22 +112,29 @@ showChildPlay(){
 }
 },
 mounted(){
+  this.myRef=this.$refs.myAudio;
+   this.$store.state.playControl=this.$refs.myAudio;//音乐播放控制器-即audio元素
   this.needMove=document.documentElement.clientWidth;
   //setTimeout(()=>{console.log(document.documentElement.offsetHeight);},2000);
   this.hidCover();
    this.$axios.get('https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=song&id=108914').then(res=>{
-     console.log(res.data);
+     //console.log(res.data);
+     this.songUrl=res.data.url
    })
   //this.getChildRef().style.left=this.needMove;
 },
 created(){
-  var name=encodeURI('江南')
+  var name=encodeURI('江南');
   this.$axios.get(`https://api.mlwei.com/music/api/wy/?key=523077333&id=${name}&type=so&cache=0&nu=10`).then(res=>{
-    this.pic=res.data.Body[0].pic;
-    this.author=res.data.Body[0].author;
-    this.title=res.data.Body[0].title;
-    console.log(res.data);
+    this.$store.commit('addToSong',res.data.Body[0].url)
+    this.$store.commit('addToPic',res.data.Body[0].pic);
+    this.$store.commit('addToAuthor',res.data.Body[0].author);
+    this.$store.commit('addToTitle',this.title=res.data.Body[0].title);
+
   })
+},
+computed:{
+
 }
 }
 </script>
@@ -157,29 +185,34 @@ height: 80px;
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;
-  justify-content: space-around;
-  width: 50%;
+  flex-grow: 1;
+  max-width: 60%;
 }
 .mini_left .mini_left_img{
   display: flex;
   align-items: center;
-  margin-left: -0.04rem;
+  margin-left: 0.02rem
 }
 .mini_left .mini_left_content{
   display: flex;
   flex-wrap: nowrap;
   flex-direction: column;
   justify-content: space-around;
+  overflow: hidden;
+  margin-left: 0.06rem
 }
 .mini_left .mini_left_content p:nth-child(1){
-  font-size: 0.048rem;
+  font-size: 0.042rem;
+  text-overflow:ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .mini_left .mini_left_content p:nth-child(2){
   color: rgb(233, 233, 233);
   font-size: 0.04rem;
 }
 .mini_right{
-  width: 50%;
+  width: 40%;
   display: flex;
   flex-wrap: nowrap;
   flex-direction: row;

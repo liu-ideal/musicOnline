@@ -3,7 +3,7 @@
   <p class="introduce">简介:这是一个歌单</p>
   <h3>歌曲列表</h3>
   <ul>
-    <li v-for='(item,index) in needDisplayList'>
+    <li v-for='(item,index) in needDisplayList' @touchend='playSong($event,index)' @touchstart='savePosition'>
       <div class="left index">
          {{index +1}}
       </div>
@@ -32,7 +32,9 @@ export default {
        needDisplayList:[],
        every:10,
        count:0,
-       nomore:false
+       nomore:false,
+       timmer:null,
+       handPosition:0
     }
   },
   methods:{
@@ -81,9 +83,45 @@ if(!this.nomore){
       // console.log(total-canSee);
       // console.log(document.documentElement.scrollTop);
     },
+    savePosition(e){
+      this.handPosition=e.touches[0].pageY;
+      //console.log(e);
+    },
     // getParam(){
     // return  this.shuju=this.$route.params
     // }
+    playSong(e,index){
+       if(e.changedTouches[0].pageY!=this.handPosition){return};//如果是为了滑动不而不是点击
+      this.$axios.get(`https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=song&id=${this.needDisplayList[index].id}`).then(res=>{
+        //console.log(res.data.url);
+        this.$store.commit('addToSong',res.data.url);
+        this.$store.commit('addToTitle',this.needDisplayList[index].title);
+        this.$store.commit('addToAuthor',this.needDisplayList[index].author);
+        this.$store.commit('addToPic',this.needDisplayList[index].pic);
+        //console.log(this.$store.state.playControl);
+        setTimeout(()=>{
+          /*--------------*/
+            this.timmer = setInterval(()=>{
+               if(this.$store.state.playControl.ended||this.$store.state.playControl.paused){//如果当前播放已经结束 即清除这个时间队列
+                 //console.log(this.timmer);
+                 clearInterval(this.timmer);
+                 return
+             }
+                var value= parseInt(this.$store.state.playControl.currentTime);
+                this.$store.commit('changeCurrentTime',value);
+              var jindu=Math.floor((this.$store.state.playControl.currentTime/this.$store.state.playControl.duration)*100)/100; //这是时间上的进度百分比
+                //console.log('detail');
+              var widthh=document.querySelector('.main_progress').offsetWidth;
+              this.$store.commit('changeSpanPosition',widthh*jindu);
+              this.$store.commit('changeRealWidth',widthh*jindu);
+              },1000)
+            /*--------------*/
+          this.$store.state.playControl.play();
+          this.$store.commit('changePlayStatu',false)
+        },500)
+        //this.songUrl=res.data.url
+      })
+    }
   },
   created(){
     if(this.songList){

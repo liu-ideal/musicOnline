@@ -2,11 +2,11 @@
   <div class="wrap">
     <h2>推荐歌单</h2>
     <ul class="songlist">
-      <li v-for='(item,index) in recommendSongList' @touchend='godetail(index)'> <img :src="item.img"> <p> {{item.title}} </p> </li>
+      <li v-for='(item,index) in recommendSongList' @touchend='godetail($event,index)' @touchstart='savePosition'> <img :src="item.img"> <p> {{item.title}} </p> </li>
     </ul>
     <h2>推荐单曲</h2>
     <ul class="song">
-      <li v-for='(item,index) in recommendSong'>
+      <li v-for='(item,index) in recommendSong' @touchend='playSong($event,index)' @touchstart='savePosition'>
          <div class="left">
         <p class="title">{{item.title}} </p>
         <p class="author"> {{item.author}}</p>
@@ -59,7 +59,9 @@ export default {
       count: 0,
       saveSongList: [ //因为要减少HTTP请求以便不会被网易云服务器拒绝访问，所以一开始就要把数据保存下来 而不是每次点击就发送请求 这里保存的是推荐歌单的详情
 
-      ]
+      ],
+      timmer:null,
+      handPosition:0
     }
   },
   methods: {
@@ -96,7 +98,7 @@ export default {
             Indicator.close();
             this.canSee=false;
             this.count += this.every;
-          },1000)
+          },500)
           Indicator.open()
           //console.log(this.recommendSong);
 
@@ -107,14 +109,50 @@ export default {
       }
 
     },
-    godetail(index) {
+    savePosition(e){
+      this.handPosition=e.touches[0].pageY;
+      //console.log(e);
+    },
+    godetail(e,index) {
       //console.log(index);
+     if(e.changedTouches[0].pageY!=this.handPosition){return};//如果是为了滑动不而不是点击
       this.$router.push({
         name: 'detail',
         params: { //路由传参
           id: index + 1, //传个ID用以标识路径 那边用:id做接收就可以了
           dataa: this.saveSongList[index]
         }
+      })
+    },
+    playSong(e,index){
+       if(e.changedTouches[0].pageY!=this.handPosition){return};//如果是为了滑动不而不是点击
+      this.$axios.get(`https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=song&id=${this.recommendSong[index].id}`).then(res=>{
+        //console.log(res.data.url);
+        this.$store.commit('addToSong',res.data.url);
+        this.$store.commit('addToTitle',this.recommendSong[index].title);
+        this.$store.commit('addToAuthor',this.recommendSong[index].author);
+        this.$store.commit('addToPic',this.recommendSong[index].pic);
+        setTimeout(()=>{
+          /*--------------*/
+            this.timmer = setInterval(()=>{
+               if(this.$store.state.playControl.ended||this.$store.state.playControl.paused){//如果当前播放已经结束 即清除这个时间队列
+                 //console.log(this.timmer);
+                 clearInterval(this.timmer);
+                 return
+             }
+                var value= parseInt(this.$store.state.playControl.currentTime);
+                this.$store.commit('changeCurrentTime',value);
+              var jindu=Math.floor((this.$store.state.playControl.currentTime/this.$store.state.playControl.duration)*100)/100; //这是时间上的进度百分比
+                console.log('recom');
+              var widthh=document.querySelector('.main_progress').offsetWidth;
+              this.$store.commit('changeSpanPosition',widthh*jindu);
+              this.$store.commit('changeRealWidth',widthh*jindu);
+              },1000)
+            /*--------------*/
+          this.$store.state.playControl.play();
+          this.$store.commit('changePlayStatu',false)
+        },500)
+        //this.songUrl=res.data.url
       })
     }
 

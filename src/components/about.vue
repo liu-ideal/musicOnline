@@ -1,6 +1,6 @@
 <template lang="html">
 
-  <div class="wrap" ref='mydiv'>
+  <div class="wrap" ref='mydiv' @touchmove.prevent=''>
     <div class="wrap_cover" @touchend='hidCover'>
     </div>
     <ul class="about">
