@@ -1,7 +1,7 @@
 <template lang="html">
 
   <div class="wrap" ref='mydiv' @touchmove.prevent=''>
-    <div class="wrap_cover" @touchend='hidCover'>
+    <div class="wrap_cover" @touchend='hidCover' @touchstart='savePosition'>
     </div>
     <ul class="about">
       <li v-for='(item,index) in list' :class="{active:item.class}" @touchstart='isTouching(index)' @touchend='noTouching(index)'>{{item.content}}</li>
@@ -16,7 +16,8 @@ export default {
     return{
       list:[{class:false,content:'下载APP'},{class:false,content:'关于作者'},{class:false,content:'关于版本'},{class:false,content:'联系我们'}],
       viewWidth:null,
-      childRef:null
+      childRef:null,
+      handPosition:0
     }
   },
   methods:{
@@ -26,13 +27,18 @@ export default {
     noTouching(index){
       this.list[index].class=false
     },
-    hidCover(){
+    hidCover(e){
+      if(e.changedTouches[0].pageY!=this.handPosition){return};//如果是为了滑动不而不是点击
     this.$refs.mydiv.style.left=this.viewWidth+'px';
   },
     windowResize(){
       this.viewWidth=document.documentElement.clientWidth;
       this.$emit('childResize',this.viewWidth)
-    }
+    },
+    savePosition(e){
+      this.handPosition=e.touches[0].pageY;
+      //console.log(e);
+    },
   },
   mounted(){//操作DOM实现过渡效果了,其他方法好像不好做，因为要动态获取设备的宽度
     window.addEventListener('resize',this.windowResize,false)

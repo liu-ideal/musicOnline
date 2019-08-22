@@ -98,7 +98,7 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.mint-search{
+.wrap .mint-search{
   height: auto;
 }
 p{
@@ -132,7 +132,7 @@ font-size: 0.05rem
   border-bottom: 1px solid rgb(186, 180, 186);
   cursor: pointer;
 }
-.mint-search-list {
+.wrap .mint-search-list {
     overflow: auto;
     padding-top: 44px;
     top: 0;

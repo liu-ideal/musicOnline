@@ -146,14 +146,14 @@ computed:{
   position: relative;
   overflow: hidden;
 }
-.headder{
+#app .headder{
 height: 80px;
 }
-.headder .left,.headder .right .iconfont{
+#app .headder .left,#app .headder .right .iconfont{
   font-size: 24px;
   color:rgb(215, 52, 52)
 }
-.router_link{
+#app .router_link{
 
   padding: 15px 0;
   font-size: 14px;

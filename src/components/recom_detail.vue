@@ -42,7 +42,8 @@ export default {
 if(!this.nomore){
   var total = document.documentElement.scrollHeight; //scrollHeight表示元素总高度.不管可见不可见，也不管有没有设置OVERFLOW为HIDDEN 它是由元素中有多少内容决定的
   var canSee = document.documentElement.clientHeight; //offsetHeight与clientHeight的区别-->从网上得到资料与自己实践得来的结果有很大不同 在这里只有用clientHeight才能得到想要的结果 而offsetHeight得到的与scrollHeight一样
-  if (total - canSee === document.documentElement.scrollTop) { //这个表示滚动条触底
+  var scroll=document.documentElement.scrollTop||document.body.scrollTop;//兼容写法
+  if (total - canSee === scroll) { //这个表示滚动条触底
     //console.log('ok');
     //count+=10;
     if(this.count+10>this.songList.length){
