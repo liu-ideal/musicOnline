@@ -44,6 +44,8 @@ if(!this.nomore){
   var canSee = document.documentElement.clientHeight; //offsetHeight与clientHeight的区别-->从网上得到资料与自己实践得来的结果有很大不同 在这里只有用clientHeight才能得到想要的结果 而offsetHeight得到的与scrollHeight一样
   var scroll=document.documentElement.scrollTop||document.body.scrollTop;//兼容写法
   if (total - canSee === scroll) { //这个表示滚动条触底
+    window.removeEventListener('touchmove',this.lazyLoad);//这时先关掉滑动 不然会可能会一直触发
+    window.removeEventListener('scroll',this.lazyLoad);
     //console.log('ok');
     //count+=10;
     if(this.count+10>this.songList.length){
@@ -72,6 +74,8 @@ if(!this.nomore){
 
       }
       this.count+=this.every;
+      window.addEventListener('touchmove',this.lazyLoad,false);//数据加载完后再开启滑动绑定
+      window.addEventListener('scroll',this.lazyLoad,false);
       Indicator.close();
       this.canSee=false;
     },1000)
@@ -134,9 +138,11 @@ if(!this.nomore){
   }
   },
   mounted() {
-    window.addEventListener('scroll',this.lazyLoad,false)
+    window.addEventListener('touchmove',this.lazyLoad,false);
+    window.addEventListener('scroll',this.lazyLoad,false);
   },
   beforeDestroy(){//组件销毁前就把这个事件移除 不然会因为JS闭包特性使得两个组件内的函数都执行（个人猜测）
+    window.removeEventListener('touchmove',this.lazyLoad);
     window.removeEventListener('scroll',this.lazyLoad);
   }
 }
