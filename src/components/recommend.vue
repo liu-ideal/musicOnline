@@ -68,15 +68,16 @@ export default {
     lazyLoad() {
       //console.log('scroll');
       if(!this.nomore){
-
         var total = document.documentElement.scrollHeight; //scrollHeight表示元素总高度.不管可见不可见，也不管有没有设置OVERFLOW为HIDDEN 它是由元素中有多少内容决定的
         var canSee = document.documentElement.clientHeight; //offsetHeight与clientHeight的区别-->从网上得到资料与自己实践得来的结果有很大不同 在这里只有用clientHeight才能得到想要的结果 而offsetHeight得到的与scrollHeight一样
 
         var scroll=document.documentElement.scrollTop||document.body.scrollTop;//兼容写法
         //console.log(total,canSee);
-        if (total - canSee === scroll) { //这个表示滚动条触底
-          window.removeEventListener('touchmove',this.lazyLoad);//这时先关掉滑动 不然会可能会一直触发
-          window.removeEventListener('scroll',this.lazyLoad);
+        if (total - canSee <= scroll+80) { //这个表示滚动条触底 之所以要加80 是因为在真实的移动端环境下非全屏不能正确获取clientHeight 原因不清楚
+          if(this.totalRecommendSongList[0]){
+            window.removeEventListener('touchmove',this.lazyLoad);//这时先关掉滑动 不然会可能会一直触发
+            window.removeEventListener('scroll',this.lazyLoad);
+          }
           //count+=10;
           if(this.count+6>this.totalRecommendSongList.length){
             this.every=this.totalRecommendSongList.length-this.count;
