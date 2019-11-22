@@ -6,7 +6,7 @@ import router from './router'
 import Mint from 'mint-ui'
 import 'mint-ui/lib/style.css'
 import Vuex from 'vuex'
-import store from '@/store/store.js'
+import store from './store/store.js'
 import Axios from 'axios'
 import Rem from './rem.js'
 Vue.prototype.$axios=Axios

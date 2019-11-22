@@ -33,8 +33,8 @@
 </template>
 
 <script>
-import about from '@/components/about'
-import player from '@/components/player'
+import about from './components/about'
+import player from './components/player'
 export default {
   name: 'App',
   components:{
@@ -125,11 +125,12 @@ mounted(){
 },
 created(){
   var name=encodeURI('江南');
-  this.$axios.get(`https://api.mlwei.com/music/api/wy/?key=523077333&id=${name}&type=so&cache=0&nu=10`).then(res=>{
-    this.$store.commit('addToSong',res.data.Body[0].url)
-    this.$store.commit('addToPic',res.data.Body[0].pic);
-    this.$store.commit('addToAuthor',res.data.Body[0].author);
-    this.$store.commit('addToTitle',this.title=res.data.Body[0].title);
+  this.$axios.get(`https://api.mlwei.com/music/api/wy/?key=523077333&cache=1&type=song&id=108914`).then(res=>{
+    console.log(res)
+    this.$store.commit('addToSong',res.data.url);
+    this.$store.commit('addToPic',res.data.pic);
+    this.$store.commit('addToAuthor','林俊杰');
+    this.$store.commit('addToTitle',res.data.title);
 
   })
 },
