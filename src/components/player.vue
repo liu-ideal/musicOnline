@@ -1,6 +1,7 @@
 <template lang="html">
   <transition name='fade'>
   <div class="wrap" v-show='this.toChildPlayer' @touchmove.prevent='' @scroll.stop=''>
+    <div id="shabi">
     <div class="clickTohid">
       <i class="iconfont icon-Group" @touchend='hidPlayer'></i>
     </div>
@@ -28,6 +29,7 @@
     <div class="play" @touchend='changePlayStatu'>
       <i class="iconfont" :class="[this.$store.state.PlayStatu?arrowActive:bofangActive]"></i>
     </div>
+  </div>
   </div>
   </transition>
 </template>
@@ -155,15 +157,20 @@ export default {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   background-color: rgba(42, 71, 77, 1);
   color: white;
   text-align: center;
   z-index: 99;
 }
+#shabi{
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
 .wrap .clickTohid{
   text-align: center;
-  padding-top: 0.04rem;
+  padding-top: 0.15rem;
   animation-name: tohidTips;
   animation-duration: 1s;
   animation-timing-function: ease;;
@@ -172,9 +179,6 @@ export default {
 }
 .wrap .clickTohid i{
   font-size: 0.056rem
-}
-.wrap .songInfor{
-  padding-top: 0.06rem
 }
 .wrap .songInfor .title{
   font-size: 0.043rem;
@@ -207,6 +211,7 @@ export default {
   align-items: center;
   margin: auto;
   margin-top: 0.1rem;
+  margin-bottom: 0.2rem;
 }
 .wrap .play i{
   font-size: 0.063rem;

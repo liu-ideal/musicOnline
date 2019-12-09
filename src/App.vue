@@ -146,6 +146,7 @@ computed:{
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+
 }
 #app .headder{
 height: 80px;
